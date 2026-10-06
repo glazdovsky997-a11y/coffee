@@ -1,0 +1,378 @@
+// all header is yours bro
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kahviopas</title>
+    <style>
+        :root {
+            --bg-color: #f7f5f0;
+            --text-color: #33281d;
+            --card-bg: #ffffff;
+            --accent-color: #c48c5a;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+
+        header {
+            text-align: center;
+            padding: 60px 20px 40px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        p.welcome-text {
+            font-size: 1.2rem;
+            color: #665b50;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 30px;
+            padding: 0 40px 60px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+        }
+
+        .card-img {
+            width: 100%;
+            height: 220px;
+            object-fit: cover;
+        }
+
+        .card-title {
+            padding: 20px;
+            font-size: 1.3rem;
+            font-weight: 600;
+            text-align: center;
+            margin: 0;
+        }
+
+        /* Täysikokoinen näyttö (Modaali-ikkuna) */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--bg-color);
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.4s ease, visibility 0.4s ease;
+            overflow-y: auto;
+        }
+
+        .modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 30px;
+            right: 40px;
+            font-size: 40px;
+            cursor: pointer;
+            color: var(--text-color);
+            transition: color 0.2s;
+            line-height: 1;
+            z-index: 1001;
+        }
+
+        .close-btn:hover {
+            color: var(--accent-color);
+        }
+
+        .modal-content {
+            max-width: 800px;
+            margin: 80px auto;
+            padding: 0 20px;
+            transform: translateY(30px);
+            opacity: 0;
+            transition: transform 0.5s ease, opacity 0.5s ease;
+        }
+
+        .modal.active .modal-content {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .modal-img {
+            width: 100%;
+            height: 400px;
+            object-fit: cover;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .modal-title {
+            font-size: 3rem;
+            margin: 0 0 10px 0;
+        }
+
+        .modal-meta {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 30px;
+            font-size: 1.1rem;
+            color: #665b50;
+            font-weight: 500;
+        }
+
+        .modal-meta span {
+            background: #e8e2d5;
+            padding: 5px 15px;
+            border-radius: 20px;
+        }
+
+        .info-section {
+            margin-bottom: 30px;
+        }
+
+        .info-section h3 {
+            font-size: 1.4rem;
+            margin-bottom: 15px;
+            color: var(--accent-color);
+            border-bottom: 2px solid #e8e2d5;
+            padding-bottom: 5px;
+            display: inline-block;
+        }
+
+        .info-section p {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Kahviopas</h1>
+        
+    </header>
+
+    <main class="grid-container" id="grid">
+        
+    </main>
+
+    <div class="modal" id="modal">
+        <div class="close-btn" id="closeBtn">&times;</div>
+        <div class="modal-content">
+            <img src="" alt="" class="modal-img" id="modalImg">
+            <h2 class="modal-title" id="modalTitle"></h2>
+            <div class="modal-meta">
+                <span id="modalCountry"></span>
+                <span id="modalYear"></span>
+            </div>
+            
+            <div class="info-section">
+                <h3>Kuvaus</h3>
+                <p id="modalDesc"></p>
+            </div>
+
+            <div class="info-section">
+                <h3>Ainesosat</h3>
+                <p id="modalIngredients"></p>
+            </div>
+
+            <div class="info-section">
+                <h3>Valmistustapa</h3>
+                <p id="modalPrep"></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Juomatietokanta my part 10 positions enogth
+        const coffees = [
+            {
+                name: "Espresso",
+                image: "https://images.unsplash.com/photo-1510591509098-f4fdc6d0ff04?auto=format&fit=crop&w=800&q=80",
+                country: "Italia",
+                year: "1901",
+                desc: "Täyteläinen perusjuoma, jolla on vahva maku ja luonteenomainen kullanruskea vaahto (crema). Se toimii pohjana useimmille muille kahvijuomille.",
+                ingredients: "Tuoretta hienoksi jauhettua kahvia (7–18 g), puhdasta vettä (25–30 ml).",
+                prep: "Kuuma vesi (noin 90–93 °C) uutetaan korkealla paineella (9 baaria) tiivistetyn kahvikiekon läpi 25–30 sekunnin ajan."
+            },
+            {
+                name: "Americano",
+                image: "https://images.unsplash.com/photo-1551030173-122aabc4489c?auto=format&fit=crop&w=800&q=80",
+                country: "Italia (amerikkalaisten popularisoima)",
+                year: "1940-luku",
+                desc: "Juoma sai alkunsa toisen maailmansodan aikana, kun Italiassa olleet yhdysvaltalaiset sotilaat pyysivät laimentamaan vahvaa espressoa vedellä saadakseen sen muistuttamaan heille tuttua suodatinkahvia.",
+                ingredients: "Yksi tai kaksi shottia espressoa, kuumaa vettä (90–120 ml).",
+                prep: "Kuppiin kaadetaan kuumaa vettä, jonka päälle kaadetaan espresso (tai päinvastoin, riippuen siitä halutaanko crema säilyttää)."
+            },
+            {
+                name: "Cappuccino",
+                image: "https://images.unsplash.com/photo-1534778101976-62847782c213?auto=format&fit=crop&w=800&q=80",
+                country: "Italia",
+                year: "1900-luvun alku (nykymuoto 1930-luku)",
+                desc: "Maailman tunnetuin maitokahvijuoma. Nimi juontaa juurensa kapusiinimunkkien kaapujen väristä.",
+                ingredients: "Espresso (1/3), kuumaa maitoa (1/3), paksua maitovaahtoa (1/3).",
+                prep: "Maito vaahdotetaan höyryttimellä tasaiseksi, kiiltäväksi mikrovaahdoksi ja kaadetaan varovasti espresson sekaan."
+            },
+            {
+                name: "Latte",
+                image: "https://images.unsplash.com/photo-1570968915860-54d5c301fa9f?auto=format&fit=crop&w=800&q=80",
+                country: "Italia",
+                year: "1950-luku",
+                desc: "Pehmeä kahvijuoma, jossa maidon maku on hallitseva. Italiassa pelkän «latte»-sanan tilaaminen tuo pöytään pelkän lasillisen tavallista maitoa.",
+                ingredients: "Espresso (1 shotti), runsaasti kuumaa maitoa (150–200 ml), ohut kerros maitovaahtoa (noin 1 cm).",
+                prep: "Korkeaan lasiin tai isoon kuppiin kaadetaan espresso, jonka jälkeen lisätään reilusti kevyesti vaahdotettua lämmintä maitoa."
+            },
+            {
+                name: "Flat White",
+                image: "https://images.unsplash.com/photo-1577968897966-3d4325b36b61?auto=format&fit=crop&w=800&q=80",
+                country: "Australia ja Uusi-Seelanti",
+                year: "1980-luku",
+                desc: "Erinomainen valinta niille, jotka arvostavat selkeää kahvin makua mutta haluavat pehmentää sitä maidolla. Maultaan selvästi voimakkaampi ja kahvisempi kuin latte.",
+                ingredients: "Tuplaespresso (doppio) tai tuplaristretto, mikrovaahdotettua maitoa (noin 110–120 ml).",
+                prep: "Lämmin maito erittäin ohuella ja samettisella vaahdolla (mikrovaahdolla) kaadetaan tuplaespresson päälle, jolloin syntyy tasainen rakenne."
+            },
+            {
+                name: "Macchiato",
+                image: "https://images.unsplash.com/photo-1485808191679-5f86510681a2?auto=format&fit=crop&w=800&q=80",
+                country: "Italia",
+                year: "1900-luvun loppu",
+                desc: "Sana «macchiato» tarkoittaa italiaksi «tahrattua» tai «merkittyä». Se on espresso, jota on vain hieman pehmennetty tilkalla maitovaahtoa.",
+                ingredients: "Yhdenkertainen tai kaksinkertainen espresso, lusikallinen vaahdotettua maitoa.",
+                prep: "Valmistetaan klassinen espresso, jonka päälle nostetaan varovasti pieni nokare («tahra») paksua maitovaahtoa."
+            },
+            {
+                name: "Mochaccino (Mocha)",
+                image: "https://images.unsplash.com/photo-1578314675249-a6910f80cc4e?auto=format&fit=crop&w=800&q=80",
+                country: "Yhdysvallat",
+                year: "1920-luku",
+                desc: "Jälkiruokamainen kahvijuoma, joka on saanut inspiraationsa perinteisestä torinolaisesta bicerin-juomasta. Täydellinen suklaan ystäville.",
+                ingredients: "Espresso, suklaasiirappi tai kaakaojauhe, kuuma maito, kermavaahto (halutessa).",
+                prep: "Lasin pohjalle laitetaan suklaata, lisätään espresso ja sekoitetaan huolellisesti. Tämän jälkeen päälle kaadetaan kuumaa vaahdotettua maitoa."
+            },
+            {
+                name: "Jäälatte",
+                image: "https://images.unsplash.com/photo-1517701550927-30cf4ba1dba5?auto=format&fit=crop&w=800&q=80",
+                country: "Yhdysvallat (maailmanlaajuinen leviäminen)",
+                year: "1990-luku",
+                desc: "Klassisen latten raikas kylmä versio, jossa yhdistyvät pehmeä maidon maku ja kahvin piristävyys.",
+                ingredients: "Espresso (1–2 shottia), kylmää maitoa, jääpaloja.",
+                prep: "Jäillä täytettyyn lasiin kaadetaan kylmää maitoa, jonka jälkeen päälle valutetaan hitaasti tuore kuuma espresso."
+            },
+            {
+                name: "Frappé",
+                image: "https://images.unsplash.com/photo-1556881286-fc6915169721?auto=format&fit=crop&w=800&q=80",
+                country: "Kreikka",
+                year: "1957",
+                desc: "Kylmä kahvijuoma, jonka Dimitris Vakondios keksi sattumalta Thessalonikin kansainvälisillä messuilla.",
+                ingredients: "Pikakahvia (tai nykyversioissa espressoa), kylmää vettä, sokeria, maitoa (halutessa), jäätä.",
+                prep: "Kahvi, sokeri ja pieni määrä vettä ravistetaan voimakkaasti shakerissa tai vatkataan sekoittimella paksuksi vaahdoksi, jonka jälkeen lisätään jäätä, vettä ja maitoa."
+            },
+            {
+                name: "Jäämatchalatte",
+                image: "https://images.unsplash.com/photo-1515823662972-da6a2e4d3002?auto=format&fit=crop&w=800&q=80",
+                country: "Japani / Yhdysvallat",
+                year: "2000-luvun alku",
+                desc: "Ei sisällä kahvia, mutta siitä on tullut kahviloiden moderni klassikko. Se on muinaisen japanilaisen teeperinteen ja amerikkalaisen kylmäjuomakulttuurin liitto.",
+                ingredients: "Matcha-vihreäteejauhetta, kuumaa vettä, kylmää maitoa, siirappia (halutessa), jäätä.",
+                prep: "Matcha-jauhe vispataan bambuvispilällä (chasen) pieneen määrään kuumaa vettä tasaiseksi. Saatu tiiviste kaadetaan jäillä ja maidolla täytettyyn lasiin."
+            }
+        ];
+
+        const grid = document.getElementById('grid');
+        const modal = document.getElementById('modal');
+        const closeBtn = document.getElementById('closeBtn');
+
+        // Modaali-ikkunan elementit dimas part 2 day left
+        const modalImg = document.getElementById('modalImg');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalCountry = document.getElementById('modalCountry');
+        const modalYear = document.getElementById('modalYear');
+        const modalDesc = document.getElementById('modalDesc');
+        const modalIngredients = document.getElementById('modalIngredients');
+        const modalPrep = document.getElementById('modalPrep');
+
+        // Korttien luominen
+        coffees.forEach((coffee, index) => {
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.innerHTML = `
+                <img src="${coffee.image}" alt="${coffee.name}" class="card-img">
+                <h3 class="card-title">${coffee.name}</h3>
+            `;
+            
+            // idk what to do with this but it works
+            card.addEventListener('click', () => {
+                modalImg.src = coffee.image;
+                modalImg.alt = coffee.name;
+                modalTitle.textContent = coffee.name;
+                modalCountry.textContent = `Maa: ${coffee.country}`;
+                modalYear.textContent = `Vuosi: ${coffee.year}`;
+                modalDesc.textContent = coffee.desc;
+                modalIngredients.textContent = coffee.ingredients;
+                modalPrep.textContent = coffee.prep;
+
+                modal.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            });
+
+            grid.appendChild(card);
+        });
+
+        // Modaalin sulkeminen
+        const closeModal = () => {
+            modal.classList.remove('active');
+            document.body.style.overflow = '';
+        };
+
+        closeBtn.addEventListener('click', closeModal);
+
+        // Sulkeminen klikattaessa taustalle
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                closeModal();
+            }
+        });
+        
+        // Sulkeminen Escape-näppäimellä
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && modal.classList.contains('active')) {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+<footer>    
+    <p class="welcome-text">Tää sivusto luotu by tg@HEOTKPOBEHEH ja @dimleu. NO AI USED, VIBECODE FOR WEAK </p>
+</footer>
+</html>

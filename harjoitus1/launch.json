@@ -1,0 +1,13 @@
+// anteeks mutta pitäs käyttää tätä launch.json tiedostoa, jotta voidaan debugata coffee.html tiedostoa suoraan Visual Studio Codessa. 
+{
+
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "msedge",
+            "request": "launch",
+            "name": "Open coffee.html",
+            "file": "c:\\Users\\glazd\\Downloads\\harjoitus1\\coffee.html"
+        }
+    ]
+}
